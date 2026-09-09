@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "形狀王國",
+      "hasCanvas": false,
+      "bodyTextLen": 307,
+      "bodyTextHash": "ce92c792c2d8707ad327cf4c14cdd34afbd1ce45c3ff85ef85c90503eb4a7a51",
+      "bodyTextPrefix": "形狀王國 王國 實驗場 挑戰 0 小探險家 小學圖形探險 歡迎來到形狀王國 認識圖形的特徵，學會周界和面積，更重要的是弄懂公式為",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "形狀王國",
+      "hasCanvas": false,
+      "bodyTextLen": 302,
+      "bodyTextHash": "e35316ff238c8f92f726c654b0e0cb717395d85a25eb026d270031c5ffd328cc",
+      "bodyTextPrefix": "形狀王國 0 小學圖形探險 歡迎來到形狀王國 認識圖形的特徵，學會周界和面積，更重要的是弄懂公式為什麼這樣算。點一座島，開始今天",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}
