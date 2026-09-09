@@ -1,7 +1,7 @@
 "use client";
 
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Beaker, Sparkles, Star } from "lucide-react";
+import { Beaker, Sparkles, Star, Trophy } from "lucide-react";
 import { AppShell, PageTitle } from "@/components/app-shell";
 import { Mascot, SpeechBubble } from "@/components/mascot";
 import { Onboarding } from "@/components/onboarding";
@@ -37,6 +37,12 @@ function Home() {
               認識圖形的特徵，學會周界和面積，更重要的是弄懂公式為什麼這樣算。點一座島，開始今天的探險。
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
+              <Button asChild size="lg" className="bg-coral text-paper hover:bg-coral/90">
+                <Link to="/arena">
+                  <Trophy className="size-4" />
+                  開房擂台
+                </Link>
+              </Button>
               <Button asChild size="lg">
                 <Link to="/practice">
                   <Sparkles className="size-4" />
@@ -60,7 +66,7 @@ function Home() {
       <div className="mt-8 flex items-start gap-3">
         <Mascot mood="think" className="hidden h-20 w-20 shrink-0 sm:block" />
         <SpeechBubble className="max-w-xl">
-          每座島有五站：認識、周界、面積、實驗、通關。每一站都能累積星星（最多五顆）。慢慢來，公式的秘密藏在『為什麼』裏面。
+          每座島五站慢慢闖就好。別急着背公式——先問『為什麼』，再動手實驗；剪一剪、搬一搬，答案通常自己蹦出來。
         </SpeechBubble>
       </div>
 

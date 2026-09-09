@@ -1,7 +1,7 @@
 "use client";
 
 import { Link } from "@tanstack/react-router";
-import { Beaker, Compass, Sparkles, Star } from "lucide-react";
+import { Beaker, Compass, Sparkles, Star, Trophy } from "lucide-react";
 import type { ReactNode } from "react";
 import { totalStars, useProgress } from "@/lib/progress";
 import { cn } from "@/lib/utils";
@@ -31,6 +31,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <NavLink to="/">王國</NavLink>
             <NavLink to="/lab">實驗場</NavLink>
             <NavLink to="/practice">挑戰</NavLink>
+            <NavLink to="/arena">擂台</NavLink>
           </nav>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 rounded-full bg-sun/70 px-2.5 py-1 font-display text-sm font-semibold">
@@ -45,10 +46,11 @@ export function AppShell({ children }: { children: ReactNode }) {
       </header>
       <main className="relative z-10 mx-auto w-full max-w-5xl px-4 pb-28 pt-6 sm:pb-12">{children}</main>
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t-2 border-ink/8 bg-paper/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md sm:hidden">
-        <div className="mx-auto grid max-w-md grid-cols-3 px-2 py-2">
+        <div className="mx-auto grid max-w-md grid-cols-4 px-2 py-2">
           <Tab to="/" icon={<Compass className="size-5" />} label="王國" />
           <Tab to="/lab" icon={<Beaker className="size-5" />} label="實驗場" />
           <Tab to="/practice" icon={<Star className="size-5" />} label="挑戰" />
+          <Tab to="/arena" icon={<Trophy className="size-5" />} label="擂台" />
         </div>
       </nav>
     </div>

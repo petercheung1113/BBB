@@ -10,14 +10,22 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ArenaRouteImport } from './routes/arena'
 import { Route as LabRouteImport } from './routes/lab'
 import { Route as PracticeRouteImport } from './routes/practice'
+import { Route as ApiArenaRouteImport } from './routes/api/arena'
+import { Route as ArenaJoinRouteImport } from './routes/arena_.join'
 import { Route as PracticePackRouteImport } from './routes/practice_.$pack'
 import { Route as ShapesShapeIdRouteImport } from './routes/shapes.$shapeId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArenaRoute = ArenaRouteImport.update({
+  id: '/arena',
+  path: '/arena',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LabRoute = LabRouteImport.update({
@@ -28,6 +36,16 @@ const LabRoute = LabRouteImport.update({
 const PracticeRoute = PracticeRouteImport.update({
   id: '/practice',
   path: '/practice',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiArenaRoute = ApiArenaRouteImport.update({
+  id: '/api/arena',
+  path: '/api/arena',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArenaJoinRoute = ArenaJoinRouteImport.update({
+  id: '/arena_/join',
+  path: '/arena/join',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PracticePackRoute = PracticePackRouteImport.update({
@@ -43,44 +61,75 @@ const ShapesShapeIdRoute = ShapesShapeIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/arena': typeof ArenaRoute
   '/lab': typeof LabRoute
   '/practice': typeof PracticeRoute
+  '/api/arena': typeof ApiArenaRoute
+  '/arena/join': typeof ArenaJoinRoute
   '/practice/$pack': typeof PracticePackRoute
   '/shapes/$shapeId': typeof ShapesShapeIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/arena': typeof ArenaRoute
   '/lab': typeof LabRoute
   '/practice': typeof PracticeRoute
+  '/api/arena': typeof ApiArenaRoute
+  '/arena/join': typeof ArenaJoinRoute
   '/practice/$pack': typeof PracticePackRoute
   '/shapes/$shapeId': typeof ShapesShapeIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/arena': typeof ArenaRoute
   '/lab': typeof LabRoute
   '/practice': typeof PracticeRoute
+  '/api/arena': typeof ApiArenaRoute
+  '/arena_/join': typeof ArenaJoinRoute
   '/practice_/$pack': typeof PracticePackRoute
   '/shapes/$shapeId': typeof ShapesShapeIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/lab' | '/practice' | '/practice/$pack' | '/shapes/$shapeId'
+  fullPaths:
+    | '/'
+    | '/arena'
+    | '/lab'
+    | '/practice'
+    | '/api/arena'
+    | '/arena/join'
+    | '/practice/$pack'
+    | '/shapes/$shapeId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/lab' | '/practice' | '/practice/$pack' | '/shapes/$shapeId'
+  to:
+    | '/'
+    | '/arena'
+    | '/lab'
+    | '/practice'
+    | '/api/arena'
+    | '/arena/join'
+    | '/practice/$pack'
+    | '/shapes/$shapeId'
   id:
     | '__root__'
     | '/'
+    | '/arena'
     | '/lab'
     | '/practice'
+    | '/api/arena'
+    | '/arena_/join'
     | '/practice_/$pack'
     | '/shapes/$shapeId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ArenaRoute: typeof ArenaRoute
   LabRoute: typeof LabRoute
   PracticeRoute: typeof PracticeRoute
+  ApiArenaRoute: typeof ApiArenaRoute
+  ArenaJoinRoute: typeof ArenaJoinRoute
   PracticePackRoute: typeof PracticePackRoute
   ShapesShapeIdRoute: typeof ShapesShapeIdRoute
 }
@@ -92,6 +141,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/arena': {
+      id: '/arena'
+      path: '/arena'
+      fullPath: '/arena'
+      preLoaderRoute: typeof ArenaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/lab': {
@@ -106,6 +162,20 @@ declare module '@tanstack/react-router' {
       path: '/practice'
       fullPath: '/practice'
       preLoaderRoute: typeof PracticeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/arena': {
+      id: '/api/arena'
+      path: '/api/arena'
+      fullPath: '/api/arena'
+      preLoaderRoute: typeof ApiArenaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/arena_/join': {
+      id: '/arena_/join'
+      path: '/arena/join'
+      fullPath: '/arena/join'
+      preLoaderRoute: typeof ArenaJoinRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/practice_/$pack': {
@@ -127,8 +197,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ArenaRoute: ArenaRoute,
   LabRoute: LabRoute,
   PracticeRoute: PracticeRoute,
+  ApiArenaRoute: ApiArenaRoute,
+  ArenaJoinRoute: ArenaJoinRoute,
   PracticePackRoute: PracticePackRoute,
   ShapesShapeIdRoute: ShapesShapeIdRoute,
 }
