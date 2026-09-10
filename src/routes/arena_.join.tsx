@@ -1,14 +1,21 @@
 "use client";
 
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppShell } from "@/components/app-shell";
+import { AvatarBadge } from "@/components/arena/avatar-badge";
+import { CharacterCreator } from "@/components/arena/character-creator";
+import { Podium } from "@/components/arena/podium";
 import { Mascot, SpeechBubble } from "@/components/mascot";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { fetchState, joinRoom, submitAnswer } from "@/lib/arena/client";
-import type { ArenaPublicState } from "@/lib/arena/types";
+import {
+  DEFAULT_ARENA_AVATAR,
+  type ArenaAvatar,
+  type ArenaPublicState,
+} from "@/lib/arena/types";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/arena_/join")({
@@ -20,7 +27,12 @@ export const Route = createFileRoute("/arena_/join")({
 
 const PLAYER_KEY = "arena-player";
 
-type PlayerSession = { code: string; playerId: string; nickname: string };
+type PlayerSession = {
+  code: string;
+  playerId: string;
+  nickname: string;
+  avatar?: ArenaAvatar;
+};
 
 function loadPlayer(): PlayerSession | null {
   if (typeof window === "undefined") return null;
@@ -56,11 +68,18 @@ function ArenaJoinPage() {
   const { code: codeFromUrl } = Route.useSearch();
   const [codeInput, setCodeInput] = useState(codeFromUrl || "");
   const [nickname, setNickname] = useState("");
+  const [avatar, setAvatar] = useState<ArenaAvatar>({ ...DEFAULT_ARENA_AVATAR });
   const [session, setSession] = useState<PlayerSession | null>(null);
   const [state, setState] = useState<ArenaPublicState | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [toast, setToast] = useState<{ kind: "ok" | "bad"; text: string; key: number } | null>(
+    null,
+  );
+  const prevScoreRef = useRef<number | null>(null);
+  const toastedQRef = useRef<number | null>(null);
+  const toastTimer = useRef<number | null>(null);
 
   useEffect(() => {
     const existing = loadPlayer();
@@ -69,6 +88,7 @@ function ArenaJoinPage() {
         setSession(existing);
         setCodeInput(existing.code);
         setNickname(existing.nickname);
+        if (existing.avatar) setAvatar(existing.avatar);
       }
     } else if (codeFromUrl) {
       setCodeInput(codeFromUrl);
@@ -113,19 +133,77 @@ function ArenaJoinPage() {
     return state.players.find((p) => p.id === session.playerId)?.score ?? 0;
   }, [state, session]);
 
+  const myAvatar = useMemo(() => {
+    if (!state || !session) return avatar;
+    return state.players.find((p) => p.id === session.playerId)?.avatar ?? avatar;
+  }, [state, session, avatar]);
+
+  // Score-delta toast once per question when entering reveal after answering
+  useEffect(() => {
+    if (!state || !session) return;
+    if (state.phase === "question") {
+      prevScoreRef.current = myScore;
+      return;
+    }
+    if (state.phase === "lobby") {
+      prevScoreRef.current = 0;
+      toastedQRef.current = null;
+      return;
+    }
+    if (state.phase !== "reveal" || !state.youAnswered) return;
+    if (toastedQRef.current === state.questionIndex) return;
+    toastedQRef.current = state.questionIndex;
+
+    const prev = prevScoreRef.current;
+    const delta = prev != null ? myScore - prev : 0;
+    const correct =
+      state.correctIndex != null &&
+      state.yourChoice != null &&
+      state.yourChoice === state.correctIndex;
+    if (toastTimer.current != null) window.clearTimeout(toastTimer.current);
+    if (correct) {
+      setToast({
+        kind: "ok",
+        text: delta > 0 ? `答對了！+${delta}` : "答對了！",
+        key: Date.now(),
+      });
+    } else {
+      setToast({ kind: "bad", text: "答錯了…下一題加油！", key: Date.now() });
+    }
+    toastTimer.current = window.setTimeout(() => setToast(null), 2200);
+    prevScoreRef.current = myScore;
+  }, [
+    state?.phase,
+    state?.questionIndex,
+    state?.youAnswered,
+    state?.correctIndex,
+    state?.yourChoice,
+    myScore,
+    session,
+    state,
+  ]);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimer.current != null) window.clearTimeout(toastTimer.current);
+    };
+  }, []);
+
   const onJoin = async () => {
     setBusy(true);
     setError(null);
     try {
-      const result = await joinRoom(codeInput.trim().toUpperCase(), nickname);
+      const result = await joinRoom(codeInput.trim().toUpperCase(), nickname, avatar);
       const next: PlayerSession = {
         code: result.state.code,
         playerId: result.playerId,
         nickname: nickname.trim(),
+        avatar,
       };
       savePlayer(next);
       setSession(next);
       setState(result.state);
+      prevScoreRef.current = 0;
     } catch (err) {
       setError(err instanceof Error ? err.message : "加入失敗");
     } finally {
@@ -138,8 +216,15 @@ function ArenaJoinPage() {
     setBusy(true);
     setError(null);
     try {
+      prevScoreRef.current = myScore;
       const next = await submitAnswer(session.code, session.playerId, choiceIndex);
       setState(next);
+      // Immediate soft feedback before reveal (locked)
+      const lockedCorrectHint = null; // correctIndex hidden during question
+      void lockedCorrectHint;
+      setToast({ kind: "ok", text: "已鎖定答案 ✓", key: Date.now() });
+      if (toastTimer.current != null) window.clearTimeout(toastTimer.current);
+      toastTimer.current = window.setTimeout(() => setToast(null), 1600);
     } catch (err) {
       setError(err instanceof Error ? err.message : "作答失敗");
     } finally {
@@ -148,9 +233,23 @@ function ArenaJoinPage() {
   };
 
   const phase = state?.phase;
+  const questionKey = state?.question?.id ?? `${state?.questionIndex ?? 0}`;
+  const timerUrgent = phase === "question" && secondsLeft != null && secondsLeft <= 5;
 
   return (
     <AppShell>
+      {toast ? (
+        <div
+          key={toast.key}
+          className={cn(
+            "arena-answer-toast",
+            toast.kind === "ok" ? "arena-answer-toast--ok" : "arena-answer-toast--bad",
+          )}
+        >
+          {toast.text}
+        </div>
+      ) : null}
+
       <div className="flex items-end gap-3">
         <Mascot
           mood={phase === "finished" ? "cheer" : phase === "question" ? "think" : "wave"}
@@ -158,16 +257,16 @@ function ArenaJoinPage() {
         />
         <SpeechBubble className="mb-3 max-w-md text-sm">
           {!session
-            ? "輸入暱稱，加入老師的形狀擂台！"
+            ? "輸入暱稱、打造角色，加入老師的形狀擂台！"
             : phase === "lobby"
               ? "已進大廳，等老師開賽～摸摸鼻子冷靜一下。"
               : phase === "question"
                 ? state?.youAnswered
-                  ? "答好了！等計時結束或老師揭曉。"
-                  : "快快選！越快越準，分數越高！"
+                  ? "答好了！等老師揭曉答案～"
+                  : "點下面大按鈕作答！越快越準，分數越高！"
                 : phase === "reveal"
                   ? "看答案啦！下一題準備好了嗎？"
-                  : "比賽結束！看看你排第幾～"}
+                  : "比賽結束！看看頒獎典禮～"}
         </SpeechBubble>
       </div>
 
@@ -200,22 +299,26 @@ function ArenaJoinPage() {
                 maxLength={12}
               />
             </div>
+            <CharacterCreator value={avatar} onChange={setAvatar} />
             <Button
               size="xl"
               className="w-full"
               disabled={busy || codeInput.trim().length !== 4 || nickname.trim().length < 1}
               onClick={onJoin}
             >
-              加入
+              加入擂台
             </Button>
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-2 rounded-xl border-2 border-ink/8 bg-card px-4 py-3">
-            <div>
-              <p className="text-xs text-muted">房間 {session.code}</p>
-              <p className="font-display font-semibold">{session.nickname}</p>
+            <div className="flex min-w-0 items-center gap-3">
+              <AvatarBadge avatar={myAvatar} size="md" title={session.nickname} />
+              <div className="min-w-0">
+                <p className="text-xs text-muted">房間 {session.code}</p>
+                <p className="truncate font-display font-semibold">{session.nickname}</p>
+              </div>
             </div>
             <div className="text-right">
               <p className="text-xs text-muted">分數</p>
@@ -225,22 +328,45 @@ function ArenaJoinPage() {
 
           {phase === "lobby" ? (
             <Card>
-              <CardContent className="p-6 text-center">
-                <p className="font-display text-lg font-semibold">等待開始…</p>
-                <p className="mt-2 text-sm text-muted">
-                  目前 {state?.players.length ?? 0} 位選手在大廳
+              <CardContent className="space-y-3 p-6 text-center">
+                <p className="font-display text-xl font-bold">已加入，等老師開始…</p>
+                <p className="font-display text-3xl font-bold tracking-[0.2em] text-ink">
+                  {session.code}
                 </p>
+                <p className="text-sm text-muted">
+                  房間代碼如上 · 目前 {state?.players.length ?? 0} 位選手在大廳
+                </p>
+                {state && state.players.length > 0 ? (
+                  <ul className="mx-auto mt-2 flex max-w-sm flex-wrap justify-center gap-2">
+                    {state.players.map((p, idx) => (
+                      <li
+                        key={p.id}
+                        className="arena-list-enter flex items-center gap-1.5 rounded-full border border-ink/10 bg-paper-2/70 px-2 py-1 text-xs font-display"
+                        style={{ animationDelay: `${Math.min(idx, 12) * 0.04}s` }}
+                      >
+                        <AvatarBadge avatar={p.avatar} size="sm" />
+                        <span className="max-w-[5rem] truncate">{p.nickname}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                <p className="text-xs text-muted">老師按「開始比賽」後，選項會出現在這裡</p>
               </CardContent>
             </Card>
           ) : null}
 
           {phase === "question" && state?.question ? (
-            <div className="space-y-3">
+            <div key={questionKey} className="arena-question-enter space-y-3">
               <div className="flex items-center justify-between">
                 <p className="font-display text-sm font-semibold text-muted">
                   第 {state.questionIndex + 1} / {state.questionCount} 題
                 </p>
-                <p className="font-display text-3xl font-bold tabular-nums text-coral">
+                <p
+                  className={cn(
+                    "font-display text-3xl font-bold tabular-nums text-coral",
+                    timerUrgent && "arena-timer-urgent",
+                  )}
+                >
                   {secondsLeft ?? "—"}
                 </p>
               </div>
@@ -277,7 +403,7 @@ function ArenaJoinPage() {
           ) : null}
 
           {phase === "reveal" && state?.question ? (
-            <Card>
+            <Card className="arena-question-enter">
               <CardContent className="space-y-3 p-5">
                 <p className="font-display text-sm font-semibold text-muted">
                   第 {state.questionIndex + 1} 題揭曉
@@ -287,16 +413,19 @@ function ArenaJoinPage() {
                   {state.question.options.map((opt, i) => {
                     const correct = state.correctIndex === i;
                     const mine = state.yourChoice === i;
+                    const wrongMine = mine && !correct;
                     return (
                       <div
                         key={i}
                         className={cn(
                           "rounded-xl border-2 px-4 py-3 font-display font-semibold",
                           correct
-                            ? "border-leaf bg-leaf/25"
-                            : mine
-                              ? "border-coral/50 bg-coral/10"
-                              : "border-ink/8 bg-paper-2/50 text-muted",
+                            ? "arena-option-correct border-leaf bg-leaf/25"
+                            : wrongMine
+                              ? "arena-option-wrong border-coral/50 bg-coral/10"
+                              : mine
+                                ? "border-coral/50 bg-coral/10"
+                                : "border-ink/8 bg-paper-2/50 text-muted",
                         )}
                       >
                         {opt}
@@ -316,42 +445,25 @@ function ArenaJoinPage() {
           ) : null}
 
           {phase === "finished" && state ? (
-            <Card>
-              <CardContent className="space-y-4 p-5">
-                <p className="text-center font-display text-2xl font-bold">總榜出爐！</p>
-                <p className="text-center text-ink-soft">
-                  你是第 <span className="font-display text-2xl font-bold text-coral">{myRank ?? "—"}</span>{" "}
-                  名 · {myScore} 分
-                </p>
-                <ul className="divide-y divide-ink/8 overflow-hidden rounded-xl border-2 border-ink/8">
-                  {state.players.map((p, idx) => (
-                    <li
-                      key={p.id}
-                      className={cn(
-                        "flex justify-between px-3 py-2 font-display",
-                        p.id === session.playerId && "bg-sun/30",
-                      )}
-                    >
-                      <span>
-                        {idx + 1}. {p.nickname}
-                      </span>
-                      <span className="tabular-nums">{p.score}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
-                    savePlayer(null);
-                    setSession(null);
-                    setState(null);
-                  }}
-                >
-                  離開
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="space-y-4">
+              <p className="text-center font-display text-lg text-ink-soft">
+                你在 {state.players.length} 位選手中排第{" "}
+                <span className="font-display text-2xl font-bold text-coral">{myRank ?? "—"}</span>{" "}
+                名 · {myScore} 分
+              </p>
+              <Podium players={state.players} highlightId={session.playerId} />
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  savePlayer(null);
+                  setSession(null);
+                  setState(null);
+                }}
+              >
+                離開
+              </Button>
+            </div>
           ) : null}
         </div>
       )}

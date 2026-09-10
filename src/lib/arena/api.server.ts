@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  addDemoPlayers,
   createRoom,
   getPublicState,
   joinRoom,
@@ -35,10 +36,27 @@ const CODE = z
   .regex(/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{4}$/);
 
 const createSchema = z.object({ op: z.literal("create") });
+const avatarSchema = z.object({
+  species: z.enum(["fox", "cat", "robot", "blob", "star"]),
+  color: z.enum([
+    "#f05a3a",
+    "#f0c43a",
+    "#2f9e62",
+    "#7ec8e3",
+    "#e86a9a",
+    "#5b7ae0",
+    "#e8893a",
+    "#6bb83a",
+  ]),
+  hat: z.enum(["none", "wizard", "cap", "crown"]),
+  accessory: z.enum(["none", "scarf", "glasses", "cape"]),
+});
+
 const joinSchema = z.object({
   op: z.literal("join"),
   code: CODE,
   nickname: z.string().trim().min(1).max(12),
+  avatar: avatarSchema.optional(),
 });
 const startSchema = z.object({
   op: z.literal("start"),
@@ -56,6 +74,12 @@ const nextSchema = z.object({
   code: CODE,
   hostToken: z.string().min(8).max(128),
 });
+const demoJoinSchema = z.object({
+  op: z.literal("demoJoin"),
+  code: CODE,
+  hostToken: z.string().min(8).max(128),
+  count: z.number().int().min(1).max(3).optional(),
+});
 
 const postSchema = z.discriminatedUnion("op", [
   createSchema,
@@ -63,6 +87,7 @@ const postSchema = z.discriminatedUnion("op", [
   startSchema,
   answerSchema,
   nextSchema,
+  demoJoinSchema,
 ]);
 
 async function handleGet(url: URL): Promise<Response> {
@@ -102,7 +127,7 @@ async function handlePost(request: Request): Promise<Response> {
       return json(result);
     }
     case "join": {
-      const result = await joinRoom(msg.code, msg.nickname);
+      const result = await joinRoom(msg.code, msg.nickname, msg.avatar);
       return json(result);
     }
     case "start": {
@@ -117,12 +142,16 @@ async function handlePost(request: Request): Promise<Response> {
       const state = await nextPhase(msg.code, msg.hostToken);
       return json({ state });
     }
+    case "demoJoin": {
+      const state = await addDemoPlayers(msg.code, msg.hostToken, msg.count ?? 2);
+      return json({ state });
+    }
     default:
       return json({ error: "unknown op" }, 400);
   }
 }
 
-/** Request entrypoint for /api/arena (GET poll, POST create|join|start|answer|next). */
+/** Request entrypoint for /api/arena (GET poll, POST create|join|start|answer|next|demoJoin). */
 export async function handleArena(request: Request): Promise<Response> {
   try {
     if (request.method === "GET") return await handleGet(new URL(request.url));
