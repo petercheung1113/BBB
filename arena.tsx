@@ -47,6 +47,10 @@ function friendlyError(err: unknown, fallback: string): string {
   const msg = err instanceof Error ? err.message : String(err ?? "");
   if (!msg) return fallback;
   if (/開房逾時|伺服器可能未就緒/.test(msg)) return msg;
+  if (/擂台 API 未部署/.test(msg)) return msg;
+  if (/404|not found|<!doctype|<html/i.test(msg)) {
+    return "擂台 API 未部署（404）。請確認 Vercel 已連 BBB 最新 main 並 Redeploy。";
+  }
   if (/timeout|aborterror|failed to fetch|networkerror|load failed/i.test(msg)) {
     return "連線逾時，請再試一次（伺服器可能未就緒）";
   }
@@ -56,7 +60,7 @@ function friendlyError(err: unknown, fallback: string): string {
   if (/ECONNREFUSED|ENOTFOUND|fetch failed/i.test(msg)) {
     return "無法連上伺服器，請稍後再試";
   }
-  // Already zh or server-provided message
+  // Prefer the real message over a bare fallback like 「開房失敗」
   return msg;
 }
 
