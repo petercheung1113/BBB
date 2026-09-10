@@ -31,7 +31,7 @@ export function Onboarding() {
               <p className="font-display text-xs font-semibold tracking-wider text-coral">歡迎來到</p>
               <h2 className="mt-1 font-display text-2xl font-semibold">形狀王國</h2>
               <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                我是星仔，王國的小巫師。這裏有正方形、三角形、圓形……我們一起學它們的特徵、周界和面積，還有公式為什麼這樣算！
+                我是星仔，王國的小巫師。這裏有圖形城堡、分數城堡……我們一起學特徵、周界、面積和分數概念，還有公式為什麼這樣算！
               </p>
               <label className="mt-4 block text-sm font-medium">你叫什麼名字？</label>
               <Input
@@ -59,7 +59,7 @@ export function Onboarding() {
                 你好，{name.trim() || "小探險家"}！
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                點下面的圖形島開始學習；想動手調一調邊長，去「實驗場」；準備好了就去「挑戰」考一考自己。
+                點王國地圖上的城堡開始探險：圖形城堡有八座島，分數城堡認識分數概念；也可去「挑戰」或「擂台」！
               </p>
               <Button
                 type="button"

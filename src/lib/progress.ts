@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { FRACTION_STATION_IDS, type FractionStationId } from "@/lib/fractions";
 import { SHAPE_IDS, type ShapeId } from "@/lib/shapes";
 
 export type LessonMark = {
@@ -24,11 +25,14 @@ type ProgressState = {
   onboarded: boolean;
   lessons: Record<ShapeId, LessonMark>;
   quizBest: Record<string, QuizBest>;
+  /** Fraction castle stations completed (1 star each). */
+  fractions: Partial<Record<FractionStationId, boolean>>;
   setNickname: (name: string) => void;
   finishOnboarding: (name: string) => void;
   markSection: (id: ShapeId, key: SectionKey) => void;
   markLessonQuiz: (id: ShapeId, score: number) => void;
   saveQuiz: (pack: string, score: number, total: number) => void;
+  markFractionStation: (id: FractionStationId) => void;
   resetAll: () => void;
 };
 
@@ -52,6 +56,14 @@ export function starsFromLesson(m: LessonMark): number {
   );
 }
 
+export function fractionStars(fractions: Partial<Record<FractionStationId, boolean>>): number {
+  let n = 0;
+  for (const id of FRACTION_STATION_IDS) {
+    if (fractions[id]) n += 1;
+  }
+  return n;
+}
+
 export const useProgress = create<ProgressState>()(
   persist(
     (set) => ({
@@ -59,6 +71,7 @@ export const useProgress = create<ProgressState>()(
       onboarded: false,
       lessons: emptyLessons(),
       quizBest: {},
+      fractions: {},
       setNickname: (nickname) => set({ nickname }),
       finishOnboarding: (name) =>
         set({
@@ -107,24 +120,34 @@ export const useProgress = create<ProgressState>()(
           if (prev && prev.score >= score) return s;
           return { quizBest: { ...s.quizBest, [pack]: { score, total } } };
         }),
+      markFractionStation: (id) =>
+        set((s) => ({
+          fractions: { ...s.fractions, [id]: true },
+        })),
       resetAll: () =>
         set({
           nickname: "",
           onboarded: false,
           lessons: emptyLessons(),
           quizBest: {},
+          fractions: {},
         }),
     }),
     { name: "shape-kingdom-progress" },
   ),
 );
 
-export function totalStars(lessons: Record<ShapeId, LessonMark>, quizBest: Record<string, QuizBest>) {
+export function totalStars(
+  lessons: Record<ShapeId, LessonMark>,
+  quizBest: Record<string, QuizBest>,
+  fractions: Partial<Record<FractionStationId, boolean>> = {},
+) {
   let n = 0;
   for (const id of SHAPE_IDS) n += starsFromLesson(lessons[id] ?? emptyLessons()[id]);
   for (const q of Object.values(quizBest)) {
     if (q.total > 0 && q.score === q.total) n += 2;
     else if (q.total > 0 && q.score / q.total >= 0.7) n += 1;
   }
+  n += fractionStars(fractions);
   return n;
 }

@@ -17,6 +17,9 @@ import { Route as ApiArenaRouteImport } from './routes/api/arena'
 import { Route as ArenaJoinRouteImport } from './routes/arena_.join'
 import { Route as PracticePackRouteImport } from './routes/practice_.$pack'
 import { Route as ShapesShapeIdRouteImport } from './routes/shapes.$shapeId'
+import { Route as CastlesShapesRouteImport } from './routes/castles.shapes'
+import { Route as CastlesFractionsRouteImport } from './routes/castles.fractions'
+import { Route as CastlesFractionsStationIdRouteImport } from './routes/castles.fractions_.$stationId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -58,6 +61,21 @@ const ShapesShapeIdRoute = ShapesShapeIdRouteImport.update({
   path: '/shapes/$shapeId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CastlesShapesRoute = CastlesShapesRouteImport.update({
+  id: '/castles/shapes',
+  path: '/castles/shapes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CastlesFractionsRoute = CastlesFractionsRouteImport.update({
+  id: '/castles/fractions',
+  path: '/castles/fractions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CastlesFractionsStationIdRoute = CastlesFractionsStationIdRouteImport.update({
+  id: '/castles/fractions_/$stationId',
+  path: '/castles/fractions/$stationId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -68,6 +86,9 @@ export interface FileRoutesByFullPath {
   '/arena/join': typeof ArenaJoinRoute
   '/practice/$pack': typeof PracticePackRoute
   '/shapes/$shapeId': typeof ShapesShapeIdRoute
+  '/castles/shapes': typeof CastlesShapesRoute
+  '/castles/fractions': typeof CastlesFractionsRoute
+  '/castles/fractions/$stationId': typeof CastlesFractionsStationIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +99,9 @@ export interface FileRoutesByTo {
   '/arena/join': typeof ArenaJoinRoute
   '/practice/$pack': typeof PracticePackRoute
   '/shapes/$shapeId': typeof ShapesShapeIdRoute
+  '/castles/shapes': typeof CastlesShapesRoute
+  '/castles/fractions': typeof CastlesFractionsRoute
+  '/castles/fractions/$stationId': typeof CastlesFractionsStationIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +113,9 @@ export interface FileRoutesById {
   '/arena_/join': typeof ArenaJoinRoute
   '/practice_/$pack': typeof PracticePackRoute
   '/shapes/$shapeId': typeof ShapesShapeIdRoute
+  '/castles/shapes': typeof CastlesShapesRoute
+  '/castles/fractions': typeof CastlesFractionsRoute
+  '/castles/fractions_/$stationId': typeof CastlesFractionsStationIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +128,9 @@ export interface FileRouteTypes {
     | '/arena/join'
     | '/practice/$pack'
     | '/shapes/$shapeId'
+    | '/castles/shapes'
+    | '/castles/fractions'
+    | '/castles/fractions/$stationId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +141,9 @@ export interface FileRouteTypes {
     | '/arena/join'
     | '/practice/$pack'
     | '/shapes/$shapeId'
+    | '/castles/shapes'
+    | '/castles/fractions'
+    | '/castles/fractions/$stationId'
   id:
     | '__root__'
     | '/'
@@ -121,6 +154,9 @@ export interface FileRouteTypes {
     | '/arena_/join'
     | '/practice_/$pack'
     | '/shapes/$shapeId'
+    | '/castles/shapes'
+    | '/castles/fractions'
+    | '/castles/fractions_/$stationId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,6 +168,9 @@ export interface RootRouteChildren {
   ArenaJoinRoute: typeof ArenaJoinRoute
   PracticePackRoute: typeof PracticePackRoute
   ShapesShapeIdRoute: typeof ShapesShapeIdRoute
+  CastlesShapesRoute: typeof CastlesShapesRoute
+  CastlesFractionsRoute: typeof CastlesFractionsRoute
+  CastlesFractionsStationIdRoute: typeof CastlesFractionsStationIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -192,6 +231,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShapesShapeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/castles/shapes': {
+      id: '/castles/shapes'
+      path: '/castles/shapes'
+      fullPath: '/castles/shapes'
+      preLoaderRoute: typeof CastlesShapesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/castles/fractions': {
+      id: '/castles/fractions'
+      path: '/castles/fractions'
+      fullPath: '/castles/fractions'
+      preLoaderRoute: typeof CastlesFractionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/castles/fractions_/$stationId': {
+      id: '/castles/fractions_/$stationId'
+      path: '/castles/fractions/$stationId'
+      fullPath: '/castles/fractions/$stationId'
+      preLoaderRoute: typeof CastlesFractionsStationIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -204,6 +264,9 @@ const rootRouteChildren: RootRouteChildren = {
   ArenaJoinRoute: ArenaJoinRoute,
   PracticePackRoute: PracticePackRoute,
   ShapesShapeIdRoute: ShapesShapeIdRoute,
+  CastlesShapesRoute: CastlesShapesRoute,
+  CastlesFractionsRoute: CastlesFractionsRoute,
+  CastlesFractionsStationIdRoute: CastlesFractionsStationIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
