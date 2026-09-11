@@ -3,27 +3,18 @@
 import type { ArenaAvatar } from "@/lib/arena/types";
 import { cn } from "@/lib/utils";
 
-import foxUrl from "@/assets/arena-avatars/fox.png";
-import catUrl from "@/assets/arena-avatars/cat.png";
-import robotUrl from "@/assets/arena-avatars/robot.png";
-import blobUrl from "@/assets/arena-avatars/blob.png";
-import starUrl from "@/assets/arena-avatars/star.png";
-import hatWizardUrl from "@/assets/arena-avatars/hat-wizard.png";
-import hatCapUrl from "@/assets/arena-avatars/hat-cap.png";
-import hatCrownUrl from "@/assets/arena-avatars/hat-crown.png";
-
 const SPECIES_SRC: Record<ArenaAvatar["species"], string> = {
-  fox: foxUrl,
-  cat: catUrl,
-  robot: robotUrl,
-  blob: blobUrl,
-  star: starUrl,
+  fox: "/arena-avatars/fox.png",
+  cat: "/arena-avatars/cat.png",
+  robot: "/arena-avatars/robot.png",
+  blob: "/arena-avatars/blob.png",
+  star: "/arena-avatars/star.png",
 };
 
 const HAT_SRC: Record<Exclude<ArenaAvatar["hat"], "none">, string> = {
-  wizard: hatWizardUrl,
-  cap: hatCapUrl,
-  crown: hatCrownUrl,
+  wizard: "/arena-avatars/hat-wizard.png",
+  cap: "/arena-avatars/hat-cap.png",
+  crown: "/arena-avatars/hat-crown.png",
 };
 
 const INK = "#2a2118";
@@ -52,6 +43,7 @@ function mixHex(hex: string, toward: string, amount: number): string {
   return `#${[r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
 }
 
+/** Approximate hue shift so the ring color also tints the character a bit. */
 function hueFilter(hex: string): string {
   const n = hex.replace("#", "");
   const full =
@@ -75,6 +67,7 @@ function hueFilter(hex: string): string {
     h *= 60;
     if (h < 0) h += 360;
   }
+  // Base art is roughly orange (~30deg). Shift toward chosen hue.
   const delta = Math.round(h - 30);
   return `hue-rotate(${delta}deg) saturate(1.15)`;
 }
@@ -154,7 +147,10 @@ function CapeOverlay({ color }: { color: string }) {
   );
 }
 
-/** Custom designed animal PNGs (imported from src/assets) — not emoji, not public/ folder. */
+/**
+ * Designed animal mascots (PNG) + hat PNGs + SVG accessories.
+ * Not emoji — custom Kahoot / anime style art in /public/arena-avatars/.
+ */
 export function AvatarArt({
   avatar,
   className,
@@ -172,6 +168,7 @@ export function AvatarArt({
     >
       {accessory === "cape" ? <CapeOverlay color={color} /> : null}
 
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={SPECIES_SRC[species]}
         alt=""
@@ -181,6 +178,7 @@ export function AvatarArt({
       />
 
       {hat !== "none" ? (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={HAT_SRC[hat]}
           alt=""
@@ -208,6 +206,7 @@ export function AvatarArt({
   );
 }
 
+/** Slash-circle icon for “none” hat/accessory chips (no emoji). */
 export function NoneIcon({ className }: { className?: string }) {
   return (
     <svg
