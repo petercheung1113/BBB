@@ -159,11 +159,15 @@ export function AvatarArt({
   className?: string;
 }) {
   const { species, color, hat, accessory } = avatar;
-  const bg = mixHex(color, "#ffffff", 0.55);
+  // Soft tint behind transparent PNG (never opaque white — art has real alpha).
+  const bg = mixHex(color, "#ffffff", 0.72);
 
   return (
     <span
-      className={cn("relative block h-full w-full overflow-hidden rounded-full", className)}
+      className={cn(
+        "relative block h-full w-full overflow-hidden rounded-full",
+        className,
+      )}
       style={{ backgroundColor: bg }}
     >
       {accessory === "cape" ? <CapeOverlay color={color} /> : null}
@@ -173,8 +177,8 @@ export function AvatarArt({
         src={SPECIES_SRC[species]}
         alt=""
         draggable={false}
-        className="relative z-[1] h-full w-full object-cover object-center select-none"
-        style={{ filter: hueFilter(color) }}
+        className="relative z-[1] h-full w-full object-contain object-center select-none"
+        style={{ filter: hueFilter(color), backgroundColor: "transparent" }}
       />
 
       {hat !== "none" ? (

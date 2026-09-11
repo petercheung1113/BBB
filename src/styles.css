@@ -385,3 +385,10 @@
     animation: none !important;
   }
 }
+
+
+/* arena-avatar-transparent */
+img[src^="/arena-avatars/"] {
+  background-color: transparent !important;
+  image-rendering: auto;
+}

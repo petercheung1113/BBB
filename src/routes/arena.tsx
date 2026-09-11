@@ -56,6 +56,9 @@ function friendlyError(err: unknown, fallback: string): string {
   if (/timeout|aborterror|failed to fetch|networkerror|load failed/i.test(msg)) {
     return "連線逾時，請再試一次（伺服器可能未就緒）";
   }
+  if (/DATABASE_URL|Neon|共用資料庫/i.test(msg)) {
+    return msg;
+  }
   if (/arena deck empty|could not allocate/i.test(msg)) {
     return "開房失敗，請再試一次";
   }
