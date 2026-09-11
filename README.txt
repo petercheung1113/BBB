@@ -1,13 +1,8 @@
-自創動物角色（真正插畫，唔係 emoji）
-================================
+唔使建 public/arena-avatars
 
-1. 把 public/arena-avatars/ 整夾放入你專案的 public/ 下面
-2. 覆蓋／新增：
-   - src/components/arena/avatar-art.tsx
-   - src/components/arena/avatar-badge.tsx
-   - src/components/arena/character-creator.tsx
-3. Redeploy
+請放：
+1. 整夾 src/assets/arena-avatars/（8 張 png）→ 專案 src/assets/arena-avatars/
+2. 覆蓋 src/components/arena/avatar-art.tsx（用 import 載入圖片）
+3. 覆蓋 avatar-badge.tsx、character-creator.tsx（若未換過）
 
-角色：狐狸、貓咪、機械人、軟泥、星星（自繪動漫風）
-帽子：巫師帽、棒球帽、皇冠（自繪）
-配件：圍巾、眼鏡、披風（SVG 疊加）
+然後 Redeploy。
