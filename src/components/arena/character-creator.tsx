@@ -1,7 +1,13 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { AvatarBadge, accessoryLabel, hatLabel, speciesLabel } from "@/components/arena/avatar-badge";
+import { NoneIcon } from "@/components/arena/avatar-art";
+import {
+  AvatarBadge,
+  accessoryLabel,
+  hatLabel,
+  speciesLabel,
+} from "@/components/arena/avatar-badge";
 import {
   ARENA_AVATAR_ACCESSORIES,
   ARENA_AVATAR_COLORS,
@@ -40,7 +46,7 @@ function Chip({
       className={cn(
         "inline-flex h-11 min-w-11 items-center justify-center rounded-full border-2 font-display text-lg transition active:scale-95",
         selected
-          ? "border-ink bg-ink text-paper shadow-pop"
+          ? "border-ink bg-ink/5 shadow-pop"
           : "border-ink/12 bg-card text-ink hover:bg-paper-2",
         className,
       )}
@@ -50,38 +56,17 @@ function Chip({
   );
 }
 
-const SPECIES_EMOJI: Record<ArenaAvatar["species"], string> = {
-  fox: "🦊",
-  cat: "🐱",
-  robot: "🤖",
-  blob: "🫧",
-  star: "⭐",
-};
-
-const HAT_EMOJI: Record<ArenaAvatar["hat"], string> = {
-  none: "🚫",
-  wizard: "🧙",
-  cap: "🧢",
-  crown: "👑",
-};
-
-const ACC_EMOJI: Record<ArenaAvatar["accessory"], string> = {
-  none: "🚫",
-  scarf: "🧣",
-  glasses: "👓",
-  cape: "🦸",
-};
-
 export function CharacterCreator({ value, onChange, className }: Props) {
   const patch = (partial: Partial<ArenaAvatar>) => onChange({ ...value, ...partial });
 
   return (
     <div className={cn("space-y-4", className)}>
       <div className="flex flex-col items-center gap-2 rounded-2xl border-2 border-ink/8 bg-paper-2/50 px-4 py-5">
-        <p className="font-display text-xs font-semibold text-muted">你的角色預覽</p>
-        <AvatarBadge avatar={value} size="xl" title="角色預覽" />
+        <p className="font-display text-xs font-semibold text-muted">你的動物角色預覽</p>
+        <AvatarBadge avatar={value} size="xl" title="動物角色預覽" />
         <p className="font-display text-sm text-ink-soft">
-          {speciesLabel(value.species)} · {hatLabel(value.hat)} · {accessoryLabel(value.accessory)}
+          {speciesLabel(value.species)} · {hatLabel(value.hat)} ·{" "}
+          {accessoryLabel(value.accessory)}
         </p>
         <button
           type="button"
@@ -93,7 +78,7 @@ export function CharacterCreator({ value, onChange, className }: Props) {
       </div>
 
       <fieldset className="space-y-2">
-        <legend className="font-display text-sm font-semibold">種族</legend>
+        <legend className="font-display text-sm font-semibold">動物角色</legend>
         <div className="flex flex-wrap gap-2">
           {ARENA_AVATAR_SPECIES.map((s) => (
             <Chip
@@ -102,7 +87,16 @@ export function CharacterCreator({ value, onChange, className }: Props) {
               selected={value.species === s}
               onClick={() => patch({ species: s })}
             >
-              {SPECIES_EMOJI[s]}
+              <AvatarBadge
+                avatar={{
+                  species: s,
+                  color: value.color,
+                  hat: "none",
+                  accessory: "none",
+                }}
+                size="sm"
+                className="shadow-none border-ink/10"
+              />
             </Chip>
           ))}
         </div>
@@ -138,7 +132,20 @@ export function CharacterCreator({ value, onChange, className }: Props) {
               selected={value.hat === h}
               onClick={() => patch({ hat: h })}
             >
-              {HAT_EMOJI[h]}
+              {h === "none" ? (
+                <NoneIcon className="text-ink/55" />
+              ) : (
+                <AvatarBadge
+                  avatar={{
+                    species: value.species,
+                    color: value.color,
+                    hat: h,
+                    accessory: "none",
+                  }}
+                  size="sm"
+                  className="shadow-none border-ink/10"
+                />
+              )}
             </Chip>
           ))}
         </div>
@@ -154,7 +161,20 @@ export function CharacterCreator({ value, onChange, className }: Props) {
               selected={value.accessory === a}
               onClick={() => patch({ accessory: a })}
             >
-              {ACC_EMOJI[a]}
+              {a === "none" ? (
+                <NoneIcon className="text-ink/55" />
+              ) : (
+                <AvatarBadge
+                  avatar={{
+                    species: value.species,
+                    color: value.color,
+                    hat: "none",
+                    accessory: a,
+                  }}
+                  size="sm"
+                  className="shadow-none border-ink/10"
+                />
+              )}
             </Chip>
           ))}
         </div>

@@ -1,33 +1,14 @@
 "use client";
 
+import { AvatarArt } from "@/components/arena/avatar-art";
 import type { ArenaAvatar } from "@/lib/arena/types";
 import { cn } from "@/lib/utils";
 
-const SPECIES_EMOJI: Record<ArenaAvatar["species"], string> = {
-  fox: "🦊",
-  cat: "🐱",
-  robot: "🤖",
-  blob: "🫧",
-  star: "⭐",
-};
-
-const HAT_EMOJI: Record<Exclude<ArenaAvatar["hat"], "none">, string> = {
-  wizard: "🧙",
-  cap: "🧢",
-  crown: "👑",
-};
-
-const ACC_EMOJI: Record<Exclude<ArenaAvatar["accessory"], "none">, string> = {
-  scarf: "🧣",
-  glasses: "👓",
-  cape: "🦸",
-};
-
 const SIZE = {
-  sm: "h-8 w-8 text-base",
-  md: "h-12 w-12 text-2xl",
-  lg: "h-20 w-20 text-4xl",
-  xl: "h-28 w-28 text-5xl",
+  sm: "h-8 w-8",
+  md: "h-12 w-12",
+  lg: "h-20 w-20",
+  xl: "h-28 w-28",
 } as const;
 
 type Size = keyof typeof SIZE;
@@ -43,8 +24,6 @@ export function AvatarBadge({
   className?: string;
   title?: string;
 }) {
-  const hat = avatar.hat !== "none" ? HAT_EMOJI[avatar.hat] : null;
-  const acc = avatar.accessory !== "none" ? ACC_EMOJI[avatar.accessory] : null;
   const ring =
     size === "sm" ? "border-2" : size === "md" ? "border-[3px]" : "border-4";
 
@@ -52,7 +31,7 @@ export function AvatarBadge({
     <span
       title={title}
       className={cn(
-        "relative inline-flex shrink-0 items-center justify-center rounded-full shadow-pop",
+        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full shadow-pop",
         ring,
         "border-ink/15",
         SIZE[size],
@@ -63,38 +42,13 @@ export function AvatarBadge({
       role={title ? "img" : undefined}
       aria-label={title}
     >
-      <span className="select-none leading-none drop-shadow-sm">
-        {SPECIES_EMOJI[avatar.species]}
-      </span>
-      {hat ? (
-        <span
-          className={cn(
-            "pointer-events-none absolute select-none leading-none",
-            size === "sm" && "-top-2 right-[-2px] text-[0.65rem]",
-            size === "md" && "-top-2.5 right-0 text-sm",
-            size === "lg" && "-top-3 right-0 text-xl",
-            size === "xl" && "-top-4 right-1 text-2xl",
-          )}
-        >
-          {hat}
-        </span>
-      ) : null}
-      {acc ? (
-        <span
-          className={cn(
-            "pointer-events-none absolute select-none leading-none",
-            size === "sm" && "-bottom-1 left-[-2px] text-[0.6rem]",
-            size === "md" && "-bottom-1.5 left-0 text-xs",
-            size === "lg" && "-bottom-2 left-0 text-lg",
-            size === "xl" && "-bottom-3 left-1 text-xl",
-          )}
-        >
-          {acc}
-        </span>
-      ) : null}
+      <AvatarArt avatar={avatar} className="h-full w-full" />
     </span>
   );
 }
+
+/** Re-export for chip previews / convenience. */
+export { AvatarArt } from "@/components/arena/avatar-art";
 
 export function speciesLabel(species: ArenaAvatar["species"]): string {
   switch (species) {
